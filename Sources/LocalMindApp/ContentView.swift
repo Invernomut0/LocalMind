@@ -13,8 +13,8 @@ struct ContentView: View {
             case .ready(let viewModel, let modelURL):
                 ChatView(viewModel: viewModel)
                     .navigationTitle(modelURL.lastPathComponent)
-            case .catalogPicker(let entries, let modelsDir):
-                ModelPickerView(entries: entries, modelsDir: modelsDir) { entry in
+            case .catalogPicker(let entries, let modelsDir, let hostMemory):
+                ModelPickerView(entries: entries, modelsDir: modelsDir, hostMemory: hostMemory) { entry in
                     launcher.selectAndDownload(entry, modelsDir: modelsDir)
                 }
             case .downloading(let entry, let progress):

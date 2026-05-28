@@ -4,7 +4,7 @@
 
 LocalMind is a macOS-native chat client for local LLMs (via embedded `llama.cpp` and optional MLX) with on-device RAG over your own files. No cloud, no account, no telemetry.
 
-**Status:** `v0.2.x-alpha` — working local chat shell with streaming `llama.cpp` inference, bundled model catalog, in-app downloader, and a Sprint 3 remote-catalog fetch path with bundled fallback. Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
+**Status:** `v0.2.x-alpha` — working local chat shell with streaming `llama.cpp` inference, bundled model catalog, in-app downloader, a Sprint 3 remote-catalog fetch path with bundled fallback, and RAM-aware model recommendations in the picker. Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
 
 ## Why LocalMind
 

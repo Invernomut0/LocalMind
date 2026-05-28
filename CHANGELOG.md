@@ -7,6 +7,8 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 ### Added
 - Sprint 3 catalog bootstrap: `RemoteModelCatalog` fetches `https://localmind.app/catalog/v1/catalog.json`, caches successful responses under the user's caches directory, and falls back to the bundled catalog through `FallbackModelCatalog` when the remote fetch fails.
 - Tests for remote catalog fetch, cache reuse, and bundled fallback.
+- `HostMemoryDetector` and `ModelRAMRecommendation` so the app can compare the current Mac's memory against each catalog entry's practical minimum RAM.
+- Tests for host-memory detection and RAM recommendation logic.
 - Initial repository scaffolding: Swift Package layout, GitHub Actions workflows (build / lint / release), CONTRIBUTING, CODE_OF_CONDUCT, MIT LICENSE, ROADMAP, first three ADRs.
 - Placeholder source files for `LocalMindApp`, `LocalMindCore`, `LocalMindRAG`, `LocalMindLicense`, `LocalMindStorage`.
 - Build scripts placeholders: `Scripts/notarize.sh`, `Scripts/build-llama.sh`, `Scripts/make-appcast.sh`.
@@ -23,6 +25,7 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 
 ### Changed
 - `AppLauncher` now prefers the remote catalog at startup and transparently falls back to the bundled catalog, so first-run installs stay hermetic when offline.
+- `ModelPickerView` now shows the Mac's detected unified memory and labels heavier models as recommendations vs. constrained fits instead of presenting every entry as equally suitable.
 - Minimum macOS bumped from 14 (Sonoma) to 15 (Sequoia). See ADR-0004.
 - `swift-tools-version` bumped from 5.9 to 6.0; CI runs on `macos-15` / Xcode 16.
 

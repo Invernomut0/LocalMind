@@ -8,7 +8,7 @@ final class AppLauncher {
     enum Phase {
         case loading
         case ready(viewModel: ChatViewModel, modelURL: URL)
-        case catalogPicker(entries: [ModelCatalogEntry], modelsDir: URL)
+        case catalogPicker(entries: [ModelCatalogEntry], modelsDir: URL, hostMemory: HostMemory)
         case downloading(entry: ModelCatalogEntry, progress: ModelDownloader.Progress)
         case modelMissing(directory: URL)
         case failed(message: String)
@@ -18,6 +18,7 @@ final class AppLauncher {
 
     private let catalog: any ModelCatalog
     private let downloader: ModelDownloader
+    private let hostMemoryDetector: HostMemoryDetector
     private var downloadTask: Task<Void, Never>?
 
     init(
@@ -25,10 +26,12 @@ final class AppLauncher {
             primary: RemoteModelCatalog(),
             fallback: BundledModelCatalog()
         ),
-        downloader: ModelDownloader = ModelDownloader()
+        downloader: ModelDownloader = ModelDownloader(),
+        hostMemoryDetector: HostMemoryDetector = HostMemoryDetector()
     ) {
         self.catalog = catalog
         self.downloader = downloader
+        self.hostMemoryDetector = hostMemoryDetector
     }
 
     func start() {
@@ -69,7 +72,11 @@ final class AppLauncher {
     private func reloadCatalog(modelsDir: URL) async {
         do {
             let document = try await catalog.load()
-            phase = .catalogPicker(entries: document.models, modelsDir: modelsDir)
+            phase = .catalogPicker(
+                entries: document.models,
+                modelsDir: modelsDir,
+                hostMemory: hostMemoryDetector.current()
+            )
         } catch {
             phase = .modelMissing(directory: modelsDir)
         }
