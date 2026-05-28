@@ -61,6 +61,17 @@ chmod +x "$MACOS_DIR/LocalMind"
 # Copy llama.framework preserving the symlink structure SwiftPM emits.
 ditto "$LLAMA_FRAMEWORK" "$FRAMEWORKS_DIR/llama.framework"
 
+# Copy SwiftPM-generated resource bundles into Contents/Resources/. We can't
+# use the .app root (SwiftPM's preferred location for Bundle.module) because
+# macOS code signing rejects unsealed contents there. The code-side fallback
+# in BundledModelCatalog locates these bundles via Bundle.main.url.
+for spm_bundle in "$BUILT_DIR"/*.bundle; do
+    [[ -d "$spm_bundle" ]] || continue
+    bundle_name="$(basename "$spm_bundle")"
+    echo "==> Copying resource bundle $bundle_name into Contents/Resources/"
+    ditto "$spm_bundle" "$CONTENTS/Resources/$bundle_name"
+done
+
 # Point the binary's runtime search path at the bundled Frameworks/ directory.
 # The binary already has @loader_path/llama.framework (from SPM's debug layout),
 # so we add @loader_path/../Frameworks to cover the .app layout too.

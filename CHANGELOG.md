@@ -23,4 +23,18 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 - Minimum macOS bumped from 14 (Sonoma) to 15 (Sequoia). See ADR-0004.
 - `swift-tools-version` bumped from 5.9 to 6.0; CI runs on `macos-15` / Xcode 16.
 
-[Unreleased]: https://github.com/Invernomut0/LocalMind/compare/HEAD...HEAD
+## [0.2.0-alpha] — 2026-05-28
+
+### Added
+- Model catalog + in-app downloader (Sprint 2). First-run flow no longer requires the user to drop a `.gguf` by hand: the app shows a curated catalog, downloads the chosen model from Hugging Face with progress UI, verifies SHA-256 streaming, then loads it.
+- `ModelCatalogEntry` schema (Codable, Sendable) with family, parameter count, quantization, downloadURL, sha256, sizeBytes, ramMinGB, promptTemplate, contextLength.
+- `BundledModelCatalog` loads `Resources/Models/catalog.json` via `Bundle.module`, with a fallback path for `.app`-bundled builds where SPM resource bundles live under `Contents/Resources/`.
+- `ChecksumVerifier`: streaming SHA-256 over a `Foundation.InputStream` using CryptoKit.
+- `ModelDownloader`: `URLSessionDownloadTask` driven by a delegate, callback-based progress, atomic move from the system temp location, checksum gate, and idempotent re-download when an existing file fails verification.
+- `AppLauncher` gains `catalogPicker` and `downloading` phases; `ContentView` routes them to `ModelPickerView` and `DownloadingView`.
+- `Scripts/build-app.sh` now copies SwiftPM resource bundles into `Contents/Resources/`.
+- Tests: `ModelCatalogTests` (schema decode + future-version gate), `ChecksumVerifierTests` (known fixture, mismatch, unreadable file, large file), `ModelDownloaderTests` (mock `URLProtocol` for download success, SHA mismatch cleanup, existing-file skip).
+- ADR-0006 documents the catalog format.
+
+[Unreleased]: https://github.com/Invernomut0/LocalMind/compare/v0.2.0-alpha...HEAD
+[0.2.0-alpha]: https://github.com/Invernomut0/LocalMind/compare/v0.1.0-alpha...v0.2.0-alpha

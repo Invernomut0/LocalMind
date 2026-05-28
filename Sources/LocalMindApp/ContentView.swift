@@ -1,4 +1,5 @@
 import AppKit
+import LocalMindCore
 import SwiftUI
 
 struct ContentView: View {
@@ -12,6 +13,16 @@ struct ContentView: View {
             case .ready(let viewModel, let modelURL):
                 ChatView(viewModel: viewModel)
                     .navigationTitle(modelURL.lastPathComponent)
+            case .catalogPicker(let entries, let modelsDir):
+                ModelPickerView(entries: entries, modelsDir: modelsDir) { entry in
+                    launcher.selectAndDownload(entry, modelsDir: modelsDir)
+                }
+            case .downloading(let entry, let progress):
+                DownloadingView(entry: entry, progress: progress) {
+                    // Fallback: derive modelsDir from the entry's expected install path.
+                    let dir = (try? ModelResolver().defaultModelsDirectory()) ?? URL(fileURLWithPath: NSHomeDirectory())
+                    launcher.cancelDownload(modelsDir: dir)
+                }
             case .modelMissing(let directory):
                 ModelMissingView(modelsDirectory: directory)
             case .failed(let message):

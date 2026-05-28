@@ -33,7 +33,8 @@ let package = Package(
                 "LocalMindStorage",
                 "SwiftLlama"
             ],
-            path: "Sources/LocalMindCore"
+            path: "Sources/LocalMindCore",
+            resources: [.process("Resources")]
         ),
         // Vendored fork of ShenghaiWang/SwiftLlama 0.4.0 with the llama.cpp
         // b5046 vocab-API regression patched. See ADR-0005 and the LICENSE in
