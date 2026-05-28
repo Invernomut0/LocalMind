@@ -1,0 +1,35 @@
+# SwiftLint configuration for LocalMind.
+
+disabled_rules:
+  - todo
+
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - explicit_init
+  - first_where
+  - last_where
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unused_import
+
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - .build
+  - Vendor
+  - Resources
+
+line_length:
+  warning: 140
+  error: 200
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - to

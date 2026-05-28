@@ -1,0 +1,11 @@
+# SwiftFormat configuration for LocalMind.
+
+--swiftversion 5.9
+--indent 4
+--maxwidth 120
+--commas inline
+--trimwhitespace always
+--linebreaks lf
+--self remove
+--importgrouping testable-bottom
+--exclude .build,Resources,Vendor

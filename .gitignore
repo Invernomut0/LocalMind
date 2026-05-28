@@ -1,0 +1,59 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Xcode / SwiftPM
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+Package.resolved
+*.xcuserstate
+*.xcuserdatad/
+
+# Build artifacts
+build/
+out/
+*.app
+*.dmg
+*.zip
+*.pkg
+
+# llama.cpp xcframework artifacts (rebuilt locally via Scripts/build-llama.sh)
+Vendor/llama.cpp/build/
+Vendor/llama.xcframework/
+
+# Model files (downloaded at runtime; never committed)
+Resources/Models/*.gguf
+Resources/Models/*.bin
+Resources/Models/*.safetensors
+
+# Signing / secrets
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+.env
+.env.*
+!.env.example
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs / coverage
+*.log
+coverage/
+*.profdata
+*.profraw
+
+# Sparkle keys (NEVER commit private keys)
+sparkle_eddsa_priv.pem

@@ -1,0 +1,62 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: build, sign, notarize, release
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      # Code-signing identity import.
+      # Required secrets (set under repo Settings → Secrets and variables → Actions):
+      #   APPLE_DEV_ID_P12_BASE64        Developer ID Application certificate (.p12) base64-encoded
+      #   APPLE_DEV_ID_P12_PASSWORD      Password used when exporting the .p12
+      #   APPLE_NOTARY_API_KEY_BASE64    App Store Connect API key (.p8) base64-encoded
+      #   APPLE_NOTARY_API_KEY_ID        API key ID
+      #   APPLE_NOTARY_API_ISSUER_ID     Issuer ID
+      #   SPARKLE_EDDSA_PRIV_PEM         Sparkle EdDSA private key (PEM)
+      - name: Import signing certificate
+        env:
+          P12_BASE64: ${{ secrets.APPLE_DEV_ID_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.APPLE_DEV_ID_P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          echo "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+      - name: Build, sign, notarize, package
+        run: ./Scripts/notarize.sh
+
+      - name: Generate / update appcast
+        env:
+          SPARKLE_EDDSA_PRIV_PEM: ${{ secrets.SPARKLE_EDDSA_PRIV_PEM }}
+        run: ./Scripts/make-appcast.sh
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/LocalMind-*.dmg
+            out/appcast*.xml
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
