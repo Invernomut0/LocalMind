@@ -5,6 +5,8 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 ## [Unreleased]
 
 ### Added
+- Sprint 3 catalog bootstrap: `RemoteModelCatalog` fetches `https://localmind.app/catalog/v1/catalog.json`, caches successful responses under the user's caches directory, and falls back to the bundled catalog through `FallbackModelCatalog` when the remote fetch fails.
+- Tests for remote catalog fetch, cache reuse, and bundled fallback.
 - Initial repository scaffolding: Swift Package layout, GitHub Actions workflows (build / lint / release), CONTRIBUTING, CODE_OF_CONDUCT, MIT LICENSE, ROADMAP, first three ADRs.
 - Placeholder source files for `LocalMindApp`, `LocalMindCore`, `LocalMindRAG`, `LocalMindLicense`, `LocalMindStorage`.
 - Build scripts placeholders: `Scripts/notarize.sh`, `Scripts/build-llama.sh`, `Scripts/make-appcast.sh`.
@@ -20,6 +22,7 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 - ADR-0005: vendor SwiftLlama 0.4.0 sources under `Sources/Vendor/SwiftLlama/`. Patches the llama.cpp b5046 vocab-API mismatch (model pointer → vocab pointer in `llama_tokenize` / `llama_token_to_piece` / `llama_vocab_is_eog`), tokenizes the prompt with `parse_special=true` so ChatML markers are recognized as special tokens, and rewrites the ChatML encoder to a clean Qwen-compatible template that includes the system prompt. Without these three fixes the app crashed at SIGBUS on the first message, or produced character-by-character corrupted output that never terminated.
 
 ### Changed
+- `AppLauncher` now prefers the remote catalog at startup and transparently falls back to the bundled catalog, so first-run installs stay hermetic when offline.
 - Minimum macOS bumped from 14 (Sonoma) to 15 (Sequoia). See ADR-0004.
 - `swift-tools-version` bumped from 5.9 to 6.0; CI runs on `macos-15` / Xcode 16.
 

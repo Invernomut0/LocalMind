@@ -89,6 +89,7 @@ public enum ModelCatalogError: Error, Equatable {
     case resourceMissing(String)
     case schemaVersionTooNew(found: Int, supported: Int)
     case decodingFailed(String)
+    case remoteFetchFailed(String)
 }
 
 public struct BundledModelCatalog: ModelCatalog {
@@ -146,5 +147,143 @@ public struct BundledModelCatalog: ModelCatalog {
             )
         }
         return document
+    }
+}
+
+public struct RemoteModelCatalog: ModelCatalog, @unchecked Sendable {
+    public static let defaultURL = URL(string: "https://localmind.app/catalog/v1/catalog.json")!
+
+    private let url: URL
+    private let session: URLSession
+    private let cacheFileURL: URL
+    private let cacheTTL: TimeInterval
+    private let now: @Sendable () -> Date
+
+    public init(
+        url: URL = RemoteModelCatalog.defaultURL,
+        session: URLSession = .shared,
+        fileManager: FileManager = .default,
+        cacheFileURL: URL? = nil,
+        cacheTTL: TimeInterval = 60 * 60,
+        now: @escaping @Sendable () -> Date = Date.init
+    ) {
+        self.url = url
+        self.session = session
+        self.cacheTTL = cacheTTL
+        self.now = now
+
+        if let cacheFileURL {
+            self.cacheFileURL = cacheFileURL
+        } else {
+            let cachesDir = (try? fileManager.url(
+                for: .cachesDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )) ?? URL(fileURLWithPath: NSTemporaryDirectory())
+            let appDir = cachesDir.appendingPathComponent("LocalMind")
+            self.cacheFileURL = appDir.appendingPathComponent("remote-catalog.json")
+        }
+    }
+
+    public func load() async throws -> ModelCatalogDocument {
+        if let cached = try loadCachedDocumentIfFresh() {
+            return cached
+        }
+
+        do {
+            let document = try await fetchRemoteDocument()
+            try persistCache(document)
+            return document
+        } catch {
+            if let cached = try loadCachedDocumentAllowingStale() {
+                return cached
+            }
+            throw error
+        }
+    }
+
+    private func fetchRemoteDocument() async throws -> ModelCatalogDocument {
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await session.data(from: url)
+        } catch {
+            throw ModelCatalogError.remoteFetchFailed(error.localizedDescription)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw ModelCatalogError.remoteFetchFailed("Invalid response")
+        }
+        guard (200..<300).contains(httpResponse.statusCode) else {
+            throw ModelCatalogError.remoteFetchFailed("HTTP \(httpResponse.statusCode)")
+        }
+
+        return try decodeDocument(from: data)
+    }
+
+    private func loadCachedDocumentIfFresh() throws -> ModelCatalogDocument? {
+        guard FileManager.default.fileExists(atPath: cacheFileURL.path) else {
+            return nil
+        }
+        let values = try cacheFileURL.resourceValues(forKeys: [.contentModificationDateKey])
+        if let modifiedAt = values.contentModificationDate,
+           now().timeIntervalSince(modifiedAt) <= cacheTTL {
+            let data = try Data(contentsOf: cacheFileURL)
+            return try decodeDocument(from: data)
+        }
+        return nil
+    }
+
+    private func loadCachedDocumentAllowingStale() throws -> ModelCatalogDocument? {
+        guard FileManager.default.fileExists(atPath: cacheFileURL.path) else {
+            return nil
+        }
+        let data = try Data(contentsOf: cacheFileURL)
+        return try decodeDocument(from: data)
+    }
+
+    private func persistCache(_ document: ModelCatalogDocument) throws {
+        let dir = cacheFileURL.deletingLastPathComponent()
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(document)
+        try data.write(to: cacheFileURL, options: [.atomic])
+    }
+
+    private func decodeDocument(from data: Data) throws -> ModelCatalogDocument {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let document: ModelCatalogDocument
+        do {
+            document = try decoder.decode(ModelCatalogDocument.self, from: data)
+        } catch {
+            throw ModelCatalogError.decodingFailed(String(describing: error))
+        }
+        if document.schemaVersion > ModelCatalogDocument.supportedSchemaVersion {
+            throw ModelCatalogError.schemaVersionTooNew(
+                found: document.schemaVersion,
+                supported: ModelCatalogDocument.supportedSchemaVersion
+            )
+        }
+        return document
+    }
+}
+
+public struct FallbackModelCatalog: ModelCatalog {
+    private let primary: any ModelCatalog
+    private let fallback: any ModelCatalog
+
+    public init(primary: any ModelCatalog, fallback: any ModelCatalog) {
+        self.primary = primary
+        self.fallback = fallback
+    }
+
+    public func load() async throws -> ModelCatalogDocument {
+        do {
+            return try await primary.load()
+        } catch {
+            return try await fallback.load()
+        }
     }
 }

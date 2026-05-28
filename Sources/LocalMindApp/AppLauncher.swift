@@ -21,7 +21,10 @@ final class AppLauncher {
     private var downloadTask: Task<Void, Never>?
 
     init(
-        catalog: any ModelCatalog = BundledModelCatalog(),
+        catalog: any ModelCatalog = FallbackModelCatalog(
+            primary: RemoteModelCatalog(),
+            fallback: BundledModelCatalog()
+        ),
         downloader: ModelDownloader = ModelDownloader()
     ) {
         self.catalog = catalog

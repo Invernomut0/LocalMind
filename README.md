@@ -4,7 +4,7 @@
 
 LocalMind is a macOS-native chat client for local LLMs (via embedded `llama.cpp` and optional MLX) with on-device RAG over your own files. No cloud, no account, no telemetry.
 
-**Status:** Sprint 1 — working chat shell with streaming `llama.cpp` inference (drop a GGUF model in `~/Library/Application Support/LocalMind/Models/` or set `LOCALMIND_MODEL_PATH`). Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
+**Status:** `v0.2.x-alpha` — working local chat shell with streaming `llama.cpp` inference, bundled model catalog, in-app downloader, and a Sprint 3 remote-catalog fetch path with bundled fallback. Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
 
 ## Why LocalMind
 
@@ -47,7 +47,7 @@ open build/LocalMind.app           # launch it
 
 The plain SwiftPM executable lives at `.build/arm64-apple-macosx/debug/LocalMindApp` but macOS hides its window when run outside a bundle. Use `Scripts/build-app.sh` to assemble a real `.app` for local dev. The signed, notarized `.app` for distribution comes from the release pipeline in Sprint 7.
 
-To run a real chat, place a GGUF model in `~/Library/Application Support/LocalMind/Models/` (or set `LOCALMIND_MODEL_PATH=/path/to/model.gguf`). Qwen 2.5 0.5B Instruct Q4_K_M is the baseline target.
+To run a real chat, either place a GGUF model in `~/Library/Application Support/LocalMind/Models/` (or set `LOCALMIND_MODEL_PATH=/path/to/model.gguf`) or let the first-run catalog download one for you. The app now prefers a remote catalog URL and falls back to the bundled catalog when offline or when the remote fetch fails. Qwen 2.5 0.5B Instruct Q4_K_M is the baseline target.
 
 ## Contributing
 
