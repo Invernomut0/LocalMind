@@ -57,3 +57,6 @@ coverage/
 
 # Sparkle keys (NEVER commit private keys)
 sparkle_eddsa_priv.pem
+
+# Claude Code session handoff (local-only, not part of project history)
+.claude-session-handoff.md
