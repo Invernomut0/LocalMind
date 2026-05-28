@@ -17,6 +17,7 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 - `Scripts/build-app.sh`: assembles `build/LocalMind.app` with embedded `llama.framework`, ad-hoc codesign, and a proper `Info.plist` so the window actually appears outside Xcode. Replaced in Sprint 7 by the codesigned + notarized release pipeline.
 - `LocalMindApp.init` sets `NSApplication.shared.setActivationPolicy(.regular)` and the window's `.onAppear` activates the app, so launching from `swift run` or the dev `.app` foregrounds the window reliably.
 - ADR-0004: raise minimum macOS to 15 (Sequoia) to consume SwiftLlama 0.4.0.
+- ADR-0005: vendor SwiftLlama 0.4.0 sources under `Sources/Vendor/SwiftLlama/`. Patches the llama.cpp b5046 vocab-API mismatch (model pointer → vocab pointer in `llama_tokenize` / `llama_token_to_piece` / `llama_vocab_is_eog`), tokenizes the prompt with `parse_special=true` so ChatML markers are recognized as special tokens, and rewrites the ChatML encoder to a clean Qwen-compatible template that includes the system prompt. Without these three fixes the app crashed at SIGBUS on the first message, or produced character-by-character corrupted output that never terminated.
 
 ### Changed
 - Minimum macOS bumped from 14 (Sonoma) to 15 (Sequoia). See ADR-0004.

@@ -20,9 +20,7 @@ let package = Package(
         .library(name: "LocalMindLicense", targets: ["LocalMindLicense"]),
         .library(name: "LocalMindStorage", targets: ["LocalMindStorage"])
     ],
-    dependencies: [
-        .package(url: "https://github.com/ShenghaiWang/SwiftLlama.git", exact: "0.4.0")
-    ],
+    dependencies: [],
     targets: [
         .executableTarget(
             name: "LocalMindApp",
@@ -33,9 +31,23 @@ let package = Package(
             name: "LocalMindCore",
             dependencies: [
                 "LocalMindStorage",
-                .product(name: "SwiftLlama", package: "SwiftLlama")
+                "SwiftLlama"
             ],
             path: "Sources/LocalMindCore"
+        ),
+        // Vendored fork of ShenghaiWang/SwiftLlama 0.4.0 with the llama.cpp
+        // b5046 vocab-API regression patched. See ADR-0005 and the LICENSE in
+        // Sources/Vendor/SwiftLlama for the upstream MIT attribution.
+        .target(
+            name: "SwiftLlama",
+            dependencies: ["LlamaFramework"],
+            path: "Sources/Vendor/SwiftLlama",
+            exclude: ["LICENSE"]
+        ),
+        .binaryTarget(
+            name: "LlamaFramework",
+            url: "https://github.com/ggml-org/llama.cpp/releases/download/b5046/llama-b5046-xcframework.zip",
+            checksum: "c19be78b5f00d8d29a25da41042cb7afa094cbf6280a225abe614b03b20029ab"
         ),
         .target(
             name: "LocalMindRAG",
