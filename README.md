@@ -4,7 +4,7 @@
 
 LocalMind is a macOS-native chat client for local LLMs (via embedded `llama.cpp` and optional MLX) with on-device RAG over your own files. No cloud, no account, no telemetry.
 
-**Status:** Sprint 0 — pre-development scaffolding. Not yet usable. Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
+**Status:** Sprint 1 — working chat shell with streaming `llama.cpp` inference (drop a GGUF model in `~/Library/Application Support/LocalMind/Models/` or set `LOCALMIND_MODEL_PATH`). Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
 
 ## Why LocalMind
 
@@ -39,11 +39,14 @@ See [`docs/architecture.md`](./docs/architecture.md) and the ADRs under [`docs/d
 Requires Xcode 16 / Swift 6+ and macOS 15+.
 
 ```bash
-swift build
-swift test
+swift build                        # debug build of all targets
+swift test                         # full test suite (one E2E test is skipped without LOCALMIND_MODEL_PATH)
+swift run LocalMindApp             # launch the SwiftUI chat shell
 ```
 
-The skeleton compiles without external dependencies; SwiftLlama / mlx-swift / Sparkle / sqlite-vec are added per the sprint plan in [`ROADMAP.md`](./ROADMAP.md).
+The debug executable lives at `.build/arm64-apple-macosx/debug/LocalMindApp`. A signed `.app` bundle is produced by the release pipeline that ships in Sprint 7.
+
+To run a real chat, place a GGUF model in `~/Library/Application Support/LocalMind/Models/` (or set `LOCALMIND_MODEL_PATH=/path/to/model.gguf`). Qwen 2.5 0.5B Instruct Q4_K_M is the baseline target.
 
 ## Contributing
 

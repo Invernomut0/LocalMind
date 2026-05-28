@@ -10,6 +10,10 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 - Build scripts placeholders: `Scripts/notarize.sh`, `Scripts/build-llama.sh`, `Scripts/make-appcast.sh`.
 - `LlamaInferenceBackend` (Sprint 1): real `llama.cpp` inference via [SwiftLlama 0.4.0](https://github.com/ShenghaiWang/SwiftLlama), streaming tokens through `AsyncThrowingStream`.
 - `InferenceRequest` refactored to chat-shaped fields (`systemPrompt`, `userMessage`, `history`, `template`); `PromptBuilder` now maps `[ChatMessage]` → `InferenceRequest`. SwiftLlama owns per-model prompt templating.
+- `LiveChatEngine` glues `PromptBuilder` + `InferenceBackend` and infers the prompt template from the model filename.
+- `ModelResolver` locates the GGUF model via `LOCALMIND_MODEL_PATH` env var, falling back to `~/Library/Application Support/LocalMind/Models/`.
+- `ChatStore` (LocalMindStorage): JSON-file conversation persistence in `~/Library/Application Support/LocalMind/conversation.json`. Will move to SQLite when `sqlite-vec` lands in Sprint 5.
+- SwiftUI shell: `ContentView` routes `loading` / `ready` / `modelMissing` / `failed` phases. `ChatView` streams the assistant reply, supports Cmd+Return to send, Cmd+. to stop, and persists on every chunk.
 - ADR-0004: raise minimum macOS to 15 (Sequoia) to consume SwiftLlama 0.4.0.
 
 ### Changed

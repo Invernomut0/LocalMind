@@ -53,7 +53,7 @@ let package = Package(
         ),
         .testTarget(
             name: "LocalMindCoreTests",
-            dependencies: ["LocalMindCore"],
+            dependencies: ["LocalMindCore", "LocalMindStorage"],
             path: "Tests/LocalMindCoreTests"
         ),
         .testTarget(
