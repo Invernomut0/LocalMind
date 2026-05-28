@@ -18,6 +18,22 @@ final class ModelCatalogTests: XCTestCase {
         XCTAssertEqual(qwen?.promptTemplate, .chatML)
     }
 
+    func testBundledCatalogContainsCuratedRecentFamilies() async throws {
+        let catalog = BundledModelCatalog()
+        let document = try await catalog.load()
+
+        XCTAssertGreaterThanOrEqual(document.models.count, 8)
+        XCTAssertTrue(document.models.contains { $0.id == "qwen3-4b-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "qwen3-8b-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "llama-3.2-3b-instruct-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "phi-4-mini-instruct-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "gemma-3-4b-it-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "ministral-8b-instruct-2410-q4_k_m" })
+
+        let families = Set(document.models.map(\.family))
+        XCTAssertTrue(families.isSuperset(of: [.qwen, .llama, .phi, .gemma, .mistral]))
+    }
+
     func testDecodingRejectsFutureSchemaVersion() async {
         let json = #"{"schemaVersion": 999, "updatedAt": "2026-05-28T00:00:00Z", "models": []}"#
         let catalog = StubCatalog(jsonString: json)

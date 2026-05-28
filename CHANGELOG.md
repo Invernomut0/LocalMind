@@ -5,6 +5,8 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 ## [Unreleased]
 
 ### Added
+- Expanded the bundled model catalog with newer curated downloads: Qwen 2.5 3B, Qwen 3 4B/8B, Llama 3.2 3B Instruct, Phi 4 Mini Instruct, Gemma 3 4B/12B IT, and Ministral 8B Instruct 2410.
+- Stronger bundled catalog tests now verify recent curated families (`qwen`, `llama`, `phi`, `gemma`, `mistral`) instead of only the smoke-test baseline.
 - Sprint 3 catalog bootstrap: `RemoteModelCatalog` fetches `https://localmind.app/catalog/v1/catalog.json`, caches successful responses under the user's caches directory, and falls back to the bundled catalog through `FallbackModelCatalog` when the remote fetch fails.
 - Tests for remote catalog fetch, cache reuse, and bundled fallback.
 - `HostMemoryDetector` and `ModelRAMRecommendation` so the app can compare the current Mac's memory against each catalog entry's practical minimum RAM.
@@ -24,6 +26,7 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 - ADR-0005: vendor SwiftLlama 0.4.0 sources under `Sources/Vendor/SwiftLlama/`. Patches the llama.cpp b5046 vocab-API mismatch (model pointer → vocab pointer in `llama_tokenize` / `llama_token_to_piece` / `llama_vocab_is_eog`), tokenizes the prompt with `parse_special=true` so ChatML markers are recognized as special tokens, and rewrites the ChatML encoder to a clean Qwen-compatible template that includes the system prompt. Without these three fixes the app crashed at SIGBUS on the first message, or produced character-by-character corrupted output that never terminated.
 
 ### Changed
+- `Resources/Models/catalog.json` now prefers stronger and more recent default picks while still keeping a tiny Qwen 2.5 0.5B smoke-test model for first-run verification.
 - `AppLauncher` now prefers the remote catalog at startup and transparently falls back to the bundled catalog, so first-run installs stay hermetic when offline.
 - `ModelPickerView` now shows the Mac's detected unified memory and labels heavier models as recommendations vs. constrained fits instead of presenting every entry as equally suitable.
 - Minimum macOS bumped from 14 (Sonoma) to 15 (Sequoia). See ADR-0004.
