@@ -4,7 +4,7 @@
 
 LocalMind is a macOS-native chat client for local LLMs (via embedded `llama.cpp` and optional MLX) with on-device RAG over your own files. No cloud, no account, no telemetry.
 
-**Status:** `v0.2.x-alpha` — working local chat shell with streaming `llama.cpp` inference, bundled model catalog, in-app downloader, a Sprint 3 remote-catalog fetch path with bundled fallback, and RAM-aware model recommendations in the picker. Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
+**Status:** `v0.2.x-alpha` — working local chat shell with streaming `llama.cpp` inference, bundled model catalog, in-app downloader, a Sprint 3 remote-catalog fetch path with bundled fallback, RAM-aware model recommendations in the picker, and compatibility guardrails for runtimes that cannot load newer GGUF architectures yet. Public roadmap in [`ROADMAP.md`](./ROADMAP.md).
 
 ## Why LocalMind
 
@@ -47,7 +47,7 @@ open build/LocalMind.app           # launch it
 
 The plain SwiftPM executable lives at `.build/arm64-apple-macosx/debug/LocalMindApp` but macOS hides its window when run outside a bundle. Use `Scripts/build-app.sh` to assemble a real `.app` for local dev. The signed, notarized `.app` for distribution comes from the release pipeline in Sprint 7.
 
-To run a real chat, either place a GGUF model in `~/Library/Application Support/LocalMind/Models/` (or set `LOCALMIND_MODEL_PATH=/path/to/model.gguf`) or let the first-run catalog download one for you. The app now prefers a remote catalog URL and falls back to the bundled catalog when offline or when the remote fetch fails. The bundled catalog currently includes newer curated picks such as Qwen 3 4B/8B, Phi 4 Mini, Gemma 3 4B/12B, Llama 3.2 3B, and Ministral 8B, while keeping Qwen 2.5 0.5B as the tiny smoke-test baseline. When a local model matches a catalog entry, LocalMind now reuses the catalog's `promptTemplate` instead of relying only on filename heuristics.
+To run a real chat, either place a GGUF model in `~/Library/Application Support/LocalMind/Models/` (or set `LOCALMIND_MODEL_PATH=/path/to/model.gguf`) or let the first-run catalog download one for you. The app now prefers a remote catalog URL and falls back to the bundled catalog when offline or when the remote fetch fails. The bundled catalog currently includes curated runtime-safe picks such as Qwen 2.5 3B/7B, Phi 4 Mini, Gemma 3 4B/12B, Llama 3.2 3B, and Ministral 8B, while keeping Qwen 2.5 0.5B as the tiny smoke-test baseline. Qwen 3 entries are intentionally excluded for now because the embedded SwiftLlama 0.4.0 / llama.cpp b5046 runtime cannot load the `qwen3` GGUF architecture yet; if a previously downloaded Qwen 3 file is detected, LocalMind routes you back to the picker with a clear warning instead of failing blindly. When a local model matches a catalog entry, LocalMind now reuses the catalog's `promptTemplate` instead of relying only on filename heuristics.
 
 ## Contributing
 

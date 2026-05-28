@@ -8,7 +8,7 @@ final class AppLauncher {
     enum Phase {
         case loading
         case ready(viewModel: ChatViewModel, modelURL: URL)
-        case catalogPicker(entries: [ModelCatalogEntry], modelsDir: URL, hostMemory: HostMemory)
+        case catalogPicker(entries: [ModelCatalogEntry], modelsDir: URL, hostMemory: HostMemory, warningMessage: String?)
         case downloading(entry: ModelCatalogEntry, progress: ModelDownloader.Progress)
         case modelMissing(directory: URL)
         case failed(message: String)
@@ -19,6 +19,7 @@ final class AppLauncher {
     private let catalog: any ModelCatalog
     private let downloader: ModelDownloader
     private let hostMemoryDetector: HostMemoryDetector
+    private let compatibilityChecker: EmbeddedRuntimeCompatibilityChecker
     private var cachedCatalogDocument: ModelCatalogDocument?
     private var downloadTask: Task<Void, Never>?
 
@@ -28,11 +29,13 @@ final class AppLauncher {
             fallback: BundledModelCatalog()
         ),
         downloader: ModelDownloader = ModelDownloader(),
-        hostMemoryDetector: HostMemoryDetector = HostMemoryDetector()
+        hostMemoryDetector: HostMemoryDetector = HostMemoryDetector(),
+        compatibilityChecker: EmbeddedRuntimeCompatibilityChecker = EmbeddedRuntimeCompatibilityChecker()
     ) {
         self.catalog = catalog
         self.downloader = downloader
         self.hostMemoryDetector = hostMemoryDetector
+        self.compatibilityChecker = compatibilityChecker
     }
 
     func start() {
@@ -55,6 +58,10 @@ final class AppLauncher {
         let resolver = ModelResolver()
         switch result(of: { try resolver.resolveModelURL() }) {
         case .success(let url):
+            if let warningMessage = compatibilityChecker.compatibility(forModelURL: url).reason {
+                await reloadCatalog(modelsDir: url.deletingLastPathComponent(), warningMessage: warningMessage)
+                return
+            }
             await loadAndPrepare(modelURL: url)
         case .failure(let error):
             await transitionFromResolveError(error)
@@ -70,13 +77,14 @@ final class AppLauncher {
         phase = .failed(message: "Model lookup failed: \(error.localizedDescription)")
     }
 
-    private func reloadCatalog(modelsDir: URL) async {
+    private func reloadCatalog(modelsDir: URL, warningMessage: String? = nil) async {
         do {
             let document = try await loadCatalogDocument()
             phase = .catalogPicker(
-                entries: document.models,
+                entries: document.models.filter { compatibilityChecker.compatibility(for: $0).isSupported },
                 modelsDir: modelsDir,
-                hostMemory: hostMemoryDetector.current()
+                hostMemory: hostMemoryDetector.current(),
+                warningMessage: warningMessage
             )
         } catch {
             phase = .modelMissing(directory: modelsDir)

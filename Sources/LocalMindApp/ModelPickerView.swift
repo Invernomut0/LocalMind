@@ -5,11 +5,15 @@ struct ModelPickerView: View {
     let entries: [ModelCatalogEntry]
     let modelsDir: URL
     let hostMemory: HostMemory
+    let warningMessage: String?
     let onSelect: (ModelCatalogEntry) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
+            if let warningMessage {
+                warningBanner(warningMessage)
+            }
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     ForEach(entries) { entry in
@@ -49,6 +53,18 @@ struct ModelPickerView: View {
             }
             .controlSize(.small)
         }
+    }
+
+    private func warningBanner(_ message: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            Text(message)
+                .font(.footnote)
+                .foregroundStyle(.primary)
+        }
+        .padding(12)
+        .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 
