@@ -41,10 +41,11 @@ Requires Xcode 16 / Swift 6+ and macOS 15+.
 ```bash
 swift build                        # debug build of all targets
 swift test                         # full test suite (one E2E test is skipped without LOCALMIND_MODEL_PATH)
-swift run LocalMindApp             # launch the SwiftUI chat shell
+Scripts/build-app.sh debug         # assemble build/LocalMind.app (unsigned, ad-hoc codesigned for dev)
+open build/LocalMind.app           # launch it
 ```
 
-The debug executable lives at `.build/arm64-apple-macosx/debug/LocalMindApp`. A signed `.app` bundle is produced by the release pipeline that ships in Sprint 7.
+The plain SwiftPM executable lives at `.build/arm64-apple-macosx/debug/LocalMindApp` but macOS hides its window when run outside a bundle. Use `Scripts/build-app.sh` to assemble a real `.app` for local dev. The signed, notarized `.app` for distribution comes from the release pipeline in Sprint 7.
 
 To run a real chat, place a GGUF model in `~/Library/Application Support/LocalMind/Models/` (or set `LOCALMIND_MODEL_PATH=/path/to/model.gguf`). Qwen 2.5 0.5B Instruct Q4_K_M is the baseline target.
 
