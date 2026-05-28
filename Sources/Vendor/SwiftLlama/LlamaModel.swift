@@ -26,7 +26,7 @@ class LlamaModel {
         #if targetEnvironment(simulator)
         model_params.n_gpu_layers = 0
         #endif
-        guard let model = llama_load_model_from_file(path, model_params) else {
+        guard let model = llama_model_load_from_file(path, model_params) else {
             throw SwiftLlamaError.others("Cannot load model at path \(path)")
         }
         self.model = model
@@ -34,7 +34,7 @@ class LlamaModel {
             throw SwiftLlamaError.others("Cannot get vocab for model at path \(path)")
         }
         self.vocab = vocab
-        guard let context = llama_new_context_with_model(model, configuration.contextParameters) else {
+        guard let context = llama_init_from_model(model, configuration.contextParameters) else {
             throw SwiftLlamaError.others("Cannot load model context")
         }
         self.context = context
@@ -42,14 +42,13 @@ class LlamaModel {
         self.batch = llama_batch_init(Int32(configuration.batchSize * Configuration.historySize * 2), 0, 1)
         self.sampler = llama_sampler_chain_init(llama_sampler_chain_default_params())
         llama_sampler_chain_add(sampler, llama_sampler_init_temp(configuration.temperature))
-        llama_sampler_chain_add(sampler, llama_sampler_init_softmax())
         llama_sampler_chain_add(sampler, llama_sampler_init_dist(1234))
         try checkContextLength(context: context, model: model)
     }
 
     private func checkContextLength(context: Context, model: Model) throws {
         let n_ctx = llama_n_ctx(context)
-        let n_ctx_train = llama_n_ctx_train(model)
+        let n_ctx_train = llama_model_n_ctx_train(model)
         if n_ctx > n_ctx_train {
             throw SwiftLlamaError.others("Model was trained on \(n_ctx_train) context but tokens \(n_ctx) specified")
         }
@@ -142,13 +141,15 @@ class LlamaModel {
     func clear() {
         tokens.removeAll()
         temporaryInvalidCChars.removeAll()
-        llama_kv_cache_clear(context)
+        if let memory = llama_get_memory(context) {
+            llama_memory_clear(memory, false)
+        }
     }
 
     deinit {
         llama_batch_free(batch)
         llama_free(context)
-        llama_free_model(model)
+        llama_model_free(model)
         llama_backend_free()
     }
 }

@@ -36,9 +36,10 @@ let package = Package(
             path: "Sources/LocalMindCore",
             resources: [.process("Resources")]
         ),
-        // Vendored fork of ShenghaiWang/SwiftLlama 0.4.0 with the llama.cpp
-        // b5046 vocab-API regression patched. See ADR-0005 and the LICENSE in
-        // Sources/Vendor/SwiftLlama for the upstream MIT attribution.
+        // Vendored fork of ShenghaiWang/SwiftLlama 0.4.0 with LocalMind's
+        // prompt-template and llama.cpp integration patches. See ADR-0005 and
+        // the LICENSE in Sources/Vendor/SwiftLlama for the upstream MIT
+        // attribution.
         .target(
             name: "SwiftLlama",
             dependencies: ["LlamaFramework"],
@@ -47,8 +48,8 @@ let package = Package(
         ),
         .binaryTarget(
             name: "LlamaFramework",
-            url: "https://github.com/ggml-org/llama.cpp/releases/download/b5046/llama-b5046-xcframework.zip",
-            checksum: "c19be78b5f00d8d29a25da41042cb7afa094cbf6280a225abe614b03b20029ab"
+            url: "https://github.com/ggml-org/llama.cpp/releases/download/b9374/llama-b9374-xcframework.zip",
+            checksum: "73f061266e532a9245899aee0060a94a3270e4b6d31c86a6c71ebecc16e6255d"
         ),
         .target(
             name: "LocalMindRAG",

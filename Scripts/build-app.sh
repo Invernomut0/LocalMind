@@ -26,7 +26,7 @@ cd "$REPO_ROOT"
 
 BUNDLE_ID="app.localmind.LocalMind"
 DISPLAY_NAME="LocalMind"
-VERSION="0.2.5-alpha"
+VERSION="0.2.6-alpha"
 BUILD_NUMBER="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
 MIN_MACOS="15.0"
 

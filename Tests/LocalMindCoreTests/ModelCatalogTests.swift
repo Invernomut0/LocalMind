@@ -24,6 +24,8 @@ final class ModelCatalogTests: XCTestCase {
 
         XCTAssertGreaterThanOrEqual(document.models.count, 8)
         XCTAssertTrue(document.models.contains { $0.id == "qwen2.5-7b-instruct-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "qwen3-4b-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "qwen3-8b-q4_k_m" })
         XCTAssertTrue(document.models.contains { $0.id == "llama-3.2-3b-instruct-q4_k_m" })
         XCTAssertTrue(document.models.contains { $0.id == "phi-4-mini-instruct-q4_k_m" })
         XCTAssertTrue(document.models.contains { $0.id == "gemma-3-4b-it-q4_k_m" })
@@ -45,11 +47,12 @@ final class ModelCatalogTests: XCTestCase {
         XCTAssertEqual(document.entry(matchingModelURL: sourceURL)?.promptTemplate, .phi)
     }
 
-    func testBundledCatalogDoesNotShipKnownUnsupportedQwen3Entries() async throws {
+    func testBundledCatalogShipsQwen3EntriesAgainAfterRuntimeUpgrade() async throws {
         let catalog = BundledModelCatalog()
         let document = try await catalog.load()
 
-        XCTAssertFalse(document.models.contains { $0.id.contains("qwen3") })
+        XCTAssertTrue(document.models.contains { $0.id == "qwen3-4b-q4_k_m" })
+        XCTAssertTrue(document.models.contains { $0.id == "qwen3-8b-q4_k_m" })
     }
 
     func testDecodingRejectsFutureSchemaVersion() async {

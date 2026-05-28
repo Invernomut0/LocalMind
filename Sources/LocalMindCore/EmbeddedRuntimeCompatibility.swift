@@ -27,12 +27,7 @@ public struct EmbeddedRuntimeCompatibilityChecker: Sendable {
     }
 
     private func compatibility(forModelName name: String) -> EmbeddedRuntimeCompatibility {
-        let normalized = name.lowercased()
-
-        if normalized.contains("qwen3") {
-            return .unsupported(reason: "This LocalMind build ships SwiftLlama 0.4.0 on llama.cpp b5046, which cannot load Qwen 3 GGUF models yet. Choose a Qwen 2.5, Llama 3.2, Phi 4 Mini, Gemma 3, or Ministral entry instead.")
-        }
-
+        _ = name
         return .supported
     }
 }

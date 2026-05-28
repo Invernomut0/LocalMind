@@ -40,7 +40,33 @@
             "sizeBytes": 4683074240,
             "ramMinGB": 16,
             "promptTemplate": "chatML",
-            "notes": "Stronger Qwen option that still works on the embedded runtime shipped today. Great upgrade path for 16 GB Macs."
+            "notes": "Stronger Qwen option with broad compatibility and good value on 16 GB Macs. Excellent balanced pick even now that Qwen 3 is supported too."
+        },
+        {
+            "id": "qwen3-4b-q4_k_m",
+            "displayName": "Qwen 3 4B",
+            "family": "qwen",
+            "parameterCount": "4B",
+            "quantization": "Q4_K_M",
+            "downloadURL": "https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
+            "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+            "sizeBytes": 2497280256,
+            "ramMinGB": 8,
+            "promptTemplate": "chatML",
+            "notes": "Newest compact Qwen generation with better instruction following than the older 3B tier. Great default pick on 8 GB Macs."
+        },
+        {
+            "id": "qwen3-8b-q4_k_m",
+            "displayName": "Qwen 3 8B",
+            "family": "qwen",
+            "parameterCount": "8B",
+            "quantization": "Q4_K_M",
+            "downloadURL": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf",
+            "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+            "sizeBytes": 5027783488,
+            "ramMinGB": 16,
+            "promptTemplate": "chatML",
+            "notes": "Current flagship small-to-mid Qwen pick. Best bundled default when you have 16 GB+ and want stronger chat quality."
         },
         {
             "id": "llama-3.2-3b-instruct-q4_k_m",

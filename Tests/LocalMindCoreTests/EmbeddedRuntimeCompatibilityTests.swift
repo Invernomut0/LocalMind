@@ -2,15 +2,15 @@ import XCTest
 @testable import LocalMindCore
 
 final class EmbeddedRuntimeCompatibilityTests: XCTestCase {
-    func testQwen3ModelIsMarkedUnsupported() {
+    func testQwen3ModelIsSupportedOnUpgradedRuntime() {
         let checker = EmbeddedRuntimeCompatibilityChecker()
 
         let compatibility = checker.compatibility(
             forModelURL: URL(fileURLWithPath: "/tmp/qwen3-8b-q4_k_m.gguf")
         )
 
-        XCTAssertFalse(compatibility.isSupported)
-        XCTAssertNotNil(compatibility.reason)
+        XCTAssertTrue(compatibility.isSupported)
+        XCTAssertNil(compatibility.reason)
     }
 
     func testQwen25ModelRemainsSupported() {
