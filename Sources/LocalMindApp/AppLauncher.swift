@@ -5,10 +5,15 @@ import LocalMindStorage
 @MainActor
 @Observable
 final class AppLauncher {
+    private struct SuspendedReadyState {
+        let viewModel: ChatViewModel
+        let modelURL: URL
+    }
+
     enum Phase {
         case loading
         case ready(viewModel: ChatViewModel, modelURL: URL)
-        case catalogPicker(entries: [ModelCatalogEntry], modelsDir: URL, hostMemory: HostMemory, warningMessage: String?)
+        case catalogPicker(entries: [ModelCatalogEntry], modelsDir: URL, hostMemory: HostMemory, warningMessage: String?, currentModelURL: URL?, canCancel: Bool)
         case downloading(entry: ModelCatalogEntry, progress: ModelDownloader.Progress)
         case modelMissing(directory: URL)
         case failed(message: String)
@@ -22,6 +27,7 @@ final class AppLauncher {
     private let compatibilityChecker: EmbeddedRuntimeCompatibilityChecker
     private var cachedCatalogDocument: ModelCatalogDocument?
     private var downloadTask: Task<Void, Never>?
+    private var suspendedReadyState: SuspendedReadyState?
 
     init(
         catalog: any ModelCatalog = FallbackModelCatalog(
@@ -43,9 +49,34 @@ final class AppLauncher {
     }
 
     func selectAndDownload(_ entry: ModelCatalogEntry, modelsDir: URL) {
+        if let installedURL = entry.installedModelURL(in: modelsDir) {
+            suspendedReadyState = nil
+            phase = .loading
+            Task { await loadAndPrepare(modelURL: installedURL, preferredTemplate: entry.promptTemplate) }
+            return
+        }
+
         downloadTask?.cancel()
         phase = .downloading(entry: entry, progress: .init(bytesDownloaded: 0, totalBytes: entry.sizeBytes))
         downloadTask = Task { await runDownload(entry: entry, modelsDir: modelsDir) }
+    }
+
+    func showModelCatalog() {
+        guard case .ready(let viewModel, let modelURL) = phase else { return }
+        suspendedReadyState = SuspendedReadyState(viewModel: viewModel, modelURL: modelURL)
+        Task {
+            await reloadCatalog(
+                modelsDir: modelURL.deletingLastPathComponent(),
+                currentModelURL: modelURL,
+                canCancel: true
+            )
+        }
+    }
+
+    func dismissModelCatalog() {
+        guard let suspendedReadyState else { return }
+        phase = .ready(viewModel: suspendedReadyState.viewModel, modelURL: suspendedReadyState.modelURL)
+        self.suspendedReadyState = nil
     }
 
     func cancelDownload(modelsDir: URL) {
@@ -77,14 +108,22 @@ final class AppLauncher {
         phase = .failed(message: "Model lookup failed: \(error.localizedDescription)")
     }
 
-    private func reloadCatalog(modelsDir: URL, warningMessage: String? = nil) async {
+    private func reloadCatalog(
+        modelsDir: URL,
+        warningMessage: String? = nil,
+        currentModelURL: URL? = nil,
+        canCancel: Bool? = nil
+    ) async {
         do {
             let document = try await loadCatalogDocument()
+            let resolvedCurrentModelURL = currentModelURL ?? suspendedReadyState?.modelURL
             phase = .catalogPicker(
                 entries: document.models.filter { compatibilityChecker.compatibility(for: $0).isSupported },
                 modelsDir: modelsDir,
                 hostMemory: hostMemoryDetector.current(),
-                warningMessage: warningMessage
+                warningMessage: warningMessage,
+                currentModelURL: resolvedCurrentModelURL,
+                canCancel: canCancel ?? (suspendedReadyState != nil)
             )
         } catch {
             phase = .modelMissing(directory: modelsDir)
@@ -136,6 +175,7 @@ final class AppLauncher {
             store: store,
             initialMessages: ChatViewModel.mappedMessages(from: persisted)
         )
+        suspendedReadyState = nil
         phase = .ready(viewModel: viewModel, modelURL: modelURL)
     }
 

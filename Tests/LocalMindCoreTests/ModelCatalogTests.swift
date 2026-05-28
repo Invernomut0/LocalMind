@@ -47,6 +47,37 @@ final class ModelCatalogTests: XCTestCase {
         XCTAssertEqual(document.entry(matchingModelURL: sourceURL)?.promptTemplate, .phi)
     }
 
+    func testEntryFindsInstalledModelUsingManagedAndSourceFilenames() throws {
+        let tempDir = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let entry = ModelCatalogEntry(
+            id: "phi-4-mini-instruct-q4_k_m",
+            displayName: "Phi 4 Mini Instruct",
+            family: .phi,
+            parameterCount: "3.8B",
+            quantization: "Q4_K_M",
+            downloadURL: URL(string: "https://example.com/phi4-mini-original.gguf")!,
+            sha256: String(repeating: "a", count: 64),
+            sizeBytes: 1024,
+            ramMinGB: 8,
+            promptTemplate: .phi
+        )
+
+        let sourceURL = tempDir.appending(path: "phi4-mini-original.gguf")
+        XCTAssertNil(entry.installedModelURL(in: tempDir))
+
+        FileManager.default.createFile(atPath: sourceURL.path, contents: Data())
+        XCTAssertEqual(entry.installedModelURL(in: tempDir), sourceURL)
+        XCTAssertTrue(entry.matches(localModelURL: sourceURL))
+
+        let managedURL = tempDir.appending(path: "phi-4-mini-instruct-q4_k_m.gguf")
+        FileManager.default.createFile(atPath: managedURL.path, contents: Data())
+        XCTAssertEqual(entry.installedModelURL(in: tempDir), managedURL)
+        XCTAssertTrue(entry.matches(localModelURL: managedURL))
+    }
+
     func testBundledCatalogShipsQwen3EntriesAgainAfterRuntimeUpgrade() async throws {
         let catalog = BundledModelCatalog()
         let document = try await catalog.load()

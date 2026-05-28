@@ -3,6 +3,8 @@ import SwiftUI
 
 struct ChatView: View {
     @Bindable var viewModel: ChatViewModel
+    let modelURL: URL
+    let onManageModels: () -> Void
     @FocusState private var inputFocused: Bool
 
     var body: some View {
@@ -17,6 +19,13 @@ struct ChatView: View {
             ToolbarItem(placement: .navigation) {
                 Text("LocalMind")
                     .font(.headline)
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: onManageModels) {
+                    Label("Models", systemImage: "square.stack.3d.up")
+                }
+                .help("Switch to another downloaded model or download a new one")
+                .disabled(viewModel.isGenerating)
             }
             ToolbarItem(placement: .primaryAction) {
                 Button(role: .destructive) {
@@ -67,6 +76,9 @@ struct ChatView: View {
                 .bold()
             Text("Type a message below. Inference runs locally on your Mac.")
                 .foregroundStyle(.secondary)
+            Text("Current model: \(modelURL.lastPathComponent)")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
         }
         .padding(.vertical, 24)
     }

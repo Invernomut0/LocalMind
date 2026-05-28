@@ -67,6 +67,26 @@ public struct ModelCatalogEntry: Sendable, Codable, Equatable, Identifiable, Has
     }
 }
 
+public extension ModelCatalogEntry {
+    func localModelCandidates(in directory: URL) -> [URL] {
+        var candidates: [URL] = [directory.appending(path: "\(id).gguf")]
+        let sourceURL = directory.appending(path: downloadURL.lastPathComponent)
+        if !candidates.contains(sourceURL) {
+            candidates.append(sourceURL)
+        }
+        return candidates
+    }
+
+    func installedModelURL(in directory: URL, fileManager: FileManager = .default) -> URL? {
+        localModelCandidates(in: directory).first { fileManager.fileExists(atPath: $0.path) }
+    }
+
+    func matches(localModelURL url: URL) -> Bool {
+        let candidateNames = Set(localModelCandidates(in: url.deletingLastPathComponent()).map { $0.lastPathComponent.lowercased() })
+        return candidateNames.contains(url.lastPathComponent.lowercased())
+    }
+}
+
 public struct ModelCatalogDocument: Sendable, Codable, Equatable {
     public static let supportedSchemaVersion = 1
 

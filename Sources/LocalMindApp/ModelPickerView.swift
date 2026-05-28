@@ -6,6 +6,8 @@ struct ModelPickerView: View {
     let modelsDir: URL
     let hostMemory: HostMemory
     let warningMessage: String?
+    let currentModelURL: URL?
+    let onCancel: (() -> Void)?
     let onSelect: (ModelCatalogEntry) -> Void
 
     var body: some View {
@@ -17,7 +19,14 @@ struct ModelPickerView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     ForEach(entries) { entry in
-                        ModelEntryRow(entry: entry, hostMemory: hostMemory) { onSelect(entry) }
+                        ModelEntryRow(
+                            entry: entry,
+                            hostMemory: hostMemory,
+                            modelsDir: modelsDir,
+                            currentModelURL: currentModelURL
+                        ) {
+                            onSelect(entry)
+                        }
                     }
                 }
             }
@@ -48,6 +57,10 @@ struct ModelPickerView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
+            if let onCancel {
+                Button("Back", action: onCancel)
+                    .controlSize(.small)
+            }
             Button("Open folder") {
                 NSWorkspace.shared.activateFileViewerSelecting([modelsDir])
             }
@@ -71,10 +84,15 @@ struct ModelPickerView: View {
 private struct ModelEntryRow: View {
     let entry: ModelCatalogEntry
     let hostMemory: HostMemory
+    let modelsDir: URL
+    let currentModelURL: URL?
     let onDownload: () -> Void
 
     var body: some View {
         let recommendation = entry.ramRecommendation(for: hostMemory)
+        let installedURL = entry.installedModelURL(in: modelsDir)
+        let isInstalled = installedURL != nil
+        let isCurrent = currentModelURL.map(entry.matches(localModelURL:)) ?? false
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
@@ -89,10 +107,15 @@ private struct ModelEntryRow: View {
                 Text(sizeLabel)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                if isInstalled {
+                    Text(isCurrent ? "Installed locally · current model" : "Installed locally")
+                        .font(.caption)
+                        .foregroundStyle(isCurrent ? Color.accentColor : Color.secondary)
+                }
                 recommendationLabel(recommendation)
             }
             Spacer()
-            downloadButton(for: recommendation)
+            actionButton(for: recommendation, isInstalled: isInstalled, isCurrent: isCurrent)
         }
         .padding(10)
         .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
@@ -146,18 +169,27 @@ private struct ModelEntryRow: View {
     }
 
     @ViewBuilder
-    private func downloadButton(for recommendation: ModelRAMRecommendation) -> some View {
-        switch recommendation.suitability {
-        case .recommended:
-            Button(action: onDownload) {
-                Label("Download", systemImage: "arrow.down.circle")
-            }
-            .buttonStyle(.borderedProminent)
-        case .constrained:
-            Button(action: onDownload) {
-                Label("Download", systemImage: "arrow.down.circle")
+    private func actionButton(for recommendation: ModelRAMRecommendation, isInstalled: Bool, isCurrent: Bool) -> some View {
+        if isCurrent {
+            Button {
+            } label: {
+                Label("Current", systemImage: "checkmark.circle.fill")
             }
             .buttonStyle(.bordered)
+            .disabled(true)
+        } else {
+            switch recommendation.suitability {
+            case .recommended:
+                Button(action: onDownload) {
+                    Label(isInstalled ? "Use now" : "Download", systemImage: isInstalled ? "play.circle" : "arrow.down.circle")
+                }
+                .buttonStyle(.borderedProminent)
+            case .constrained:
+                Button(action: onDownload) {
+                    Label(isInstalled ? "Use now" : "Download", systemImage: isInstalled ? "play.circle" : "arrow.down.circle")
+                }
+                .buttonStyle(.bordered)
+            }
         }
     }
 }

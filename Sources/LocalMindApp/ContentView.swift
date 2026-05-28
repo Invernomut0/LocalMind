@@ -11,10 +11,19 @@ struct ContentView: View {
             case .loading:
                 LoadingView()
             case .ready(let viewModel, let modelURL):
-                ChatView(viewModel: viewModel)
+                ChatView(viewModel: viewModel, modelURL: modelURL) {
+                    launcher.showModelCatalog()
+                }
                     .navigationTitle(modelURL.lastPathComponent)
-            case .catalogPicker(let entries, let modelsDir, let hostMemory, let warningMessage):
-                ModelPickerView(entries: entries, modelsDir: modelsDir, hostMemory: hostMemory, warningMessage: warningMessage) { entry in
+            case .catalogPicker(let entries, let modelsDir, let hostMemory, let warningMessage, let currentModelURL, let canCancel):
+                ModelPickerView(
+                    entries: entries,
+                    modelsDir: modelsDir,
+                    hostMemory: hostMemory,
+                    warningMessage: warningMessage,
+                    currentModelURL: currentModelURL,
+                    onCancel: canCancel ? { launcher.dismissModelCatalog() } : nil
+                ) { entry in
                     launcher.selectAndDownload(entry, modelsDir: modelsDir)
                 }
             case .downloading(let entry, let progress):

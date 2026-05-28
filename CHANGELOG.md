@@ -8,6 +8,7 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 - Expanded the bundled model catalog with newer curated downloads: Qwen 2.5 3B/7B, Qwen 3 4B/8B, Llama 3.2 3B Instruct, Phi 4 Mini Instruct, Gemma 3 4B/12B IT, and Ministral 8B Instruct 2410.
 - Stronger bundled catalog tests now verify recent curated families (`qwen`, `llama`, `phi`, `gemma`, `mistral`) instead of only the smoke-test baseline.
 - `ModelCatalogDocument.entry(matchingModelURL:)` matches both installed `id.gguf` filenames and original source filenames, so curated metadata survives app restarts and manually moved downloads.
+- The chat toolbar now exposes a `Models` action that reopens the catalog, allowing users to switch to an already-downloaded model or download a new one without restarting the app.
 - Sprint 3 catalog bootstrap: `RemoteModelCatalog` fetches `https://localmind.app/catalog/v1/catalog.json`, caches successful responses under the user's caches directory, and falls back to the bundled catalog through `FallbackModelCatalog` when the remote fetch fails.
 - Tests for remote catalog fetch, cache reuse, and bundled fallback.
 - `HostMemoryDetector` and `ModelRAMRecommendation` so the app can compare the current Mac's memory against each catalog entry's practical minimum RAM.
@@ -31,6 +32,7 @@ All notable changes to LocalMind are documented here. Format follows [Keep a Cha
 - `Resources/Models/catalog.json` now prefers stronger and more recent default picks while still keeping a tiny Qwen 2.5 0.5B smoke-test model for first-run verification.
 - The temporary runtime block on `qwen3` models has been lifted after the embedded runtime upgrade, so previously downloaded Qwen 3 files can load normally again.
 - `Package.swift` now pins the embedded `llama.cpp` xcframework to release `b9374`.
+- `ModelPickerView` now detects which catalog entries are already installed locally, labels the current model, and offers `Use now` instead of forcing a re-download.
 - `AppLauncher` now prefers the catalog's `promptTemplate` whenever the local model file matches a curated entry, falling back to filename inference only for unknown models.
 - `AppLauncher` now prefers the remote catalog at startup and transparently falls back to the bundled catalog, so first-run installs stay hermetic when offline.
 - `ModelPickerView` now shows the Mac's detected unified memory and labels heavier models as recommendations vs. constrained fits instead of presenting every entry as equally suitable.
