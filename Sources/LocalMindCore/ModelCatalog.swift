@@ -79,6 +79,21 @@ public struct ModelCatalogDocument: Sendable, Codable, Equatable {
         self.updatedAt = updatedAt
         self.models = models
     }
+
+    public func entry(matchingModelURL url: URL) -> ModelCatalogEntry? {
+        let candidateNames = Set([
+            url.lastPathComponent.lowercased(),
+            url.deletingPathExtension().lastPathComponent.lowercased()
+        ])
+
+        return models.first { entry in
+            let installedName = "\(entry.id).gguf".lowercased()
+            let sourceName = entry.downloadURL.lastPathComponent.lowercased()
+            return candidateNames.contains(installedName)
+                || candidateNames.contains(entry.id.lowercased())
+                || candidateNames.contains(sourceName)
+        }
+    }
 }
 
 public protocol ModelCatalog: Sendable {

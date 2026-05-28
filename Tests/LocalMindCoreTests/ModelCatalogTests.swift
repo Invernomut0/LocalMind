@@ -34,6 +34,18 @@ final class ModelCatalogTests: XCTestCase {
         XCTAssertTrue(families.isSuperset(of: [.qwen, .llama, .phi, .gemma, .mistral]))
     }
 
+    func testBundledCatalogMatchesInstalledAndSourceFilenames() async throws {
+        let catalog = BundledModelCatalog()
+        let document = try await catalog.load()
+
+        let installedURL = URL(fileURLWithPath: "/tmp/phi-4-mini-instruct-q4_k_m.gguf")
+        let sourceURL = URL(fileURLWithPath: "/tmp/Phi-4-mini-instruct-Q4_K_M.gguf")
+
+        XCTAssertEqual(document.entry(matchingModelURL: installedURL)?.id, "phi-4-mini-instruct-q4_k_m")
+        XCTAssertEqual(document.entry(matchingModelURL: sourceURL)?.id, "phi-4-mini-instruct-q4_k_m")
+        XCTAssertEqual(document.entry(matchingModelURL: sourceURL)?.promptTemplate, .phi)
+    }
+
     func testDecodingRejectsFutureSchemaVersion() async {
         let json = #"{"schemaVersion": 999, "updatedAt": "2026-05-28T00:00:00Z", "models": []}"#
         let catalog = StubCatalog(jsonString: json)

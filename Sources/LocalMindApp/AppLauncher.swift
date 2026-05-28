@@ -19,6 +19,7 @@ final class AppLauncher {
     private let catalog: any ModelCatalog
     private let downloader: ModelDownloader
     private let hostMemoryDetector: HostMemoryDetector
+    private var cachedCatalogDocument: ModelCatalogDocument?
     private var downloadTask: Task<Void, Never>?
 
     init(
@@ -71,7 +72,7 @@ final class AppLauncher {
 
     private func reloadCatalog(modelsDir: URL) async {
         do {
-            let document = try await catalog.load()
+            let document = try await loadCatalogDocument()
             phase = .catalogPicker(
                 entries: document.models,
                 modelsDir: modelsDir,
@@ -93,7 +94,7 @@ final class AppLauncher {
                     self.phase = .downloading(entry: current, progress: update)
                 }
             }
-            await loadAndPrepare(modelURL: destination)
+            await loadAndPrepare(modelURL: destination, preferredTemplate: entry.promptTemplate)
         } catch is CancellationError {
             await reloadCatalog(modelsDir: modelsDir)
         } catch {
@@ -101,7 +102,7 @@ final class AppLauncher {
         }
     }
 
-    private func loadAndPrepare(modelURL: URL) async {
+    private func loadAndPrepare(modelURL: URL, preferredTemplate: PromptTemplate? = nil) async {
         let backend = LlamaInferenceBackend()
         do {
             try await backend.loadModel(at: modelURL)
@@ -110,7 +111,7 @@ final class AppLauncher {
             return
         }
 
-        let template = template(for: modelURL)
+        let template = await resolveTemplate(for: modelURL, preferredTemplate: preferredTemplate)
         let engine = LiveChatEngine(backend: backend, template: template)
         let store: ChatStore
         let persisted: [PersistedMessage]
@@ -128,6 +129,28 @@ final class AppLauncher {
             initialMessages: ChatViewModel.mappedMessages(from: persisted)
         )
         phase = .ready(viewModel: viewModel, modelURL: modelURL)
+    }
+
+    private func resolveTemplate(for modelURL: URL, preferredTemplate: PromptTemplate?) async -> PromptTemplate {
+        if let preferredTemplate {
+            return preferredTemplate
+        }
+
+        if let document = try? await loadCatalogDocument(),
+           let entry = document.entry(matchingModelURL: modelURL) {
+            return entry.promptTemplate
+        }
+
+        return template(for: modelURL)
+    }
+
+    private func loadCatalogDocument() async throws -> ModelCatalogDocument {
+        if let cachedCatalogDocument {
+            return cachedCatalogDocument
+        }
+        let document = try await catalog.load()
+        cachedCatalogDocument = document
+        return document
     }
 
     private func template(for url: URL) -> PromptTemplate {
