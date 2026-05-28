@@ -11,7 +11,7 @@ swift build
 swift test
 ```
 
-Requires Xcode 15+ / Swift 5.9+ and macOS 14+.
+Requires Xcode 16+ / Swift 6+ and macOS 15+.
 
 ## How to contribute
 
@@ -22,7 +22,7 @@ Requires Xcode 15+ / Swift 5.9+ and macOS 14+.
 
 ## Coding standards
 
-- Swift 5.9+ idiomatic style.
+- Swift 6+ idiomatic style.
 - `SwiftFormat` + `SwiftLint` enforced in CI (configs at repo root, added in Sprint 0).
 - Default to no comments. Only write a comment when the *why* is non-obvious.
 - All code, comments, commit messages, and docs are in English.

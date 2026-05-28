@@ -1,8 +1,7 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
-// External dependencies are intentionally not added in Sprint 0: skeleton compiles
-// with zero network access. They land in the sprint that needs them:
+// External dependencies are added in the sprint that needs them:
 //   Sprint 1: SwiftLlama         — https://github.com/ShenghaiWang/SwiftLlama
 //   Sprint 5: SQLite.swift       — https://github.com/stephencelis/SQLite.swift
 //   Sprint 5: sqlite-vec wrapper — built via Scripts/build-sqlite-vec.sh
@@ -13,7 +12,7 @@ import PackageDescription
 let package = Package(
     name: "LocalMind",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v15)
     ],
     products: [
         .executable(name: "LocalMindApp", targets: ["LocalMindApp"]),

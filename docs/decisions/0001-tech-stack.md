@@ -17,7 +17,7 @@ LocalMind is a macOS-native chat client for local LLMs with on-device RAG. We ne
 
 | Layer | Choice |
 |-------|--------|
-| UI | SwiftUI (macOS 14+) |
+| UI | SwiftUI (macOS 15+, raised from 14 in [ADR-0004](./0004-raise-macos-minimum.md)) |
 | Inference (primary) | `llama.cpp` via SwiftLlama bindings, GGUF format |
 | Inference (Pro accelerated) | MLX-Swift as an optional backend on Apple Silicon |
 | Embedding | `nomic-embed-text v2` (free), `mxbai-embed-large` (Pro), both via llama.cpp embedding mode |

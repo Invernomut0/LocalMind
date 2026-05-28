@@ -14,7 +14,7 @@ Current public surface: [README](./README.md) · [ROADMAP](./ROADMAP.md) · [Arc
 - **Tech stack**: SwiftUI + SwiftLlama (llama.cpp) + MLX-Swift (optional Pro) + sqlite-vec + Sparkle 2 + GitHub Actions. See [ADR-0001](./docs/decisions/0001-tech-stack.md).
 - **Distribution**: GitHub Releases only; Apple Developer ID + notarization mandatory. No Mac App Store path. See [ADR-0003](./docs/decisions/0003-distribution-channel.md).
 - **Hardware**: Apple Silicon only (M1+). Intel explicitly unsupported.
-- **macOS minimum**: 14 (Sonoma).
+- **macOS minimum**: 15 (Sequoia). See [ADR-0004](./docs/decisions/0004-raise-macos-minimum.md).
 - **Build-in-public**: repo public from day 1, weekly devlogs, GitHub Discussions used for non-trivial design questions.
 
 ## Language and style
@@ -46,7 +46,7 @@ swift test --parallel # run all unit tests
 swift test --filter PromptBuilderTests   # focused
 ```
 
-CI runs the same on macOS 14 via `.github/workflows/build.yml`. The release pipeline (`release.yml`) takes care of codesign + notarize + appcast and triggers on tags `v*`.
+CI runs the same on macOS 15 via `.github/workflows/build.yml`. The release pipeline (`release.yml`) takes care of codesign + notarize + appcast and triggers on tags `v*`.
 
 ## Conventions
 

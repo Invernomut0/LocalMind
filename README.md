@@ -21,7 +21,7 @@ LocalMind is distributed via GitHub Releases — signed with an Apple Developer 
 
 - Apple Silicon only (M1 and newer). Intel Macs are unsupported by design.
 - 16 GB RAM recommended for 7B-class models; 8 GB works for sub-3B models.
-- macOS 14 (Sonoma) or newer.
+- macOS 15 (Sequoia) or newer.
 
 ## Architecture (high level)
 
@@ -36,7 +36,7 @@ See [`docs/architecture.md`](./docs/architecture.md) and the ADRs under [`docs/d
 
 ## Build (developer)
 
-Requires Xcode 15 / Swift 5.9+ and macOS 14+.
+Requires Xcode 16 / Swift 6+ and macOS 15+.
 
 ```bash
 swift build
