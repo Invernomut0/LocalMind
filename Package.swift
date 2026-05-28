@@ -2,7 +2,6 @@
 import PackageDescription
 
 // External dependencies are added in the sprint that needs them:
-//   Sprint 1: SwiftLlama         — https://github.com/ShenghaiWang/SwiftLlama
 //   Sprint 5: SQLite.swift       — https://github.com/stephencelis/SQLite.swift
 //   Sprint 5: sqlite-vec wrapper — built via Scripts/build-sqlite-vec.sh
 //   Sprint 7: Sparkle 2          — https://github.com/sparkle-project/Sparkle
@@ -22,7 +21,7 @@ let package = Package(
         .library(name: "LocalMindStorage", targets: ["LocalMindStorage"])
     ],
     dependencies: [
-        // Added per sprint plan.
+        .package(url: "https://github.com/ShenghaiWang/SwiftLlama.git", exact: "0.4.0")
     ],
     targets: [
         .executableTarget(
@@ -32,7 +31,10 @@ let package = Package(
         ),
         .target(
             name: "LocalMindCore",
-            dependencies: ["LocalMindStorage"],
+            dependencies: [
+                "LocalMindStorage",
+                .product(name: "SwiftLlama", package: "SwiftLlama")
+            ],
             path: "Sources/LocalMindCore"
         ),
         .target(
